@@ -1,0 +1,38 @@
+name: 🌍 国际财经新闻推送
+
+on:
+  schedule:
+    # 以下均为 UTC 时间，北京时间 = UTC+8
+    - cron: '20 1 * * *'    # 北京时间 09:20
+    - cron: '50 4 * * *'    # 北京时间 12:50
+    - cron: '55 14 * * *'   # 北京时间 22:55
+
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 克隆仓库
+        uses: actions/checkout@v3
+
+      - name: 🛠️ 设置 Python 环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: 📦 安装依赖
+        run: |
+          cd $GITHUB_WORKSPACE
+          pip install -U pip setuptools wheel
+          pip install lxml[html_clean]
+          pip install -r requirements.txt
+
+      - name: 🔑 设置环境变量
+        run: |
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          echo "SERVER_CHAN_KEYS=${{ secrets.SERVER_CHAN_KEYS }}" >> $GITHUB_ENV
+          echo "SERVERCHAN3_SENDKEY=${{ secrets.SERVERCHAN3_SENDKEY }}" >> $GITHUB_ENV
+
+      - name: 🚀 运行国际财经脚本
+        run: python financebot_global.py
